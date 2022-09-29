@@ -20,6 +20,7 @@ var typeRipVue = new Vue({
     el: '#typeripvue',
     data: {
         urlInput: "",
+        urlIns: [],
         fontIsActive: false,
         fontFamily: {},
         rawDownload: false,
@@ -35,24 +36,28 @@ var typeRipVue = new Vue({
             };
         },
         urlSubmitButtonPress: function() {
-            this.showMessage("Loading...", "")
-            TypeRip.handleRequest(this.urlInput, (responseType_, response_) => {
-                if(responseType_ == "error"){
-                    this.showMessage("Error", response_)
-                }else{
-                    this.fontFamily.name = response_.name
-                    this.fontFamily.designers = response_.designers
-                    this.fontFamily.fonts = response_.fonts
-                    this.fontFamily.sampleText = response_.sampleText
-                    this.fontIsActive = true
+            this.showMessage(this.urlinput, "");
+            this.urlIns = this.urlInput.split(";");
+            for (var i = 0; i < this.urlIns.length; i++) {
+                TypeRip.handleRequest(this.urlIns[i], (responseType_, response_) => {
+                    if(responseType_ == "error"){
+                        this.showMessage("Error", response_)
+                    }else{
+                        this.fontFamily.name = response_.name
+                        this.fontFamily.designers = response_.designers
+                        this.fontFamily.fonts = response_.fonts
+                        this.fontFamily.sampleText = response_.sampleText
+                        this.fontIsActive = true
 
-                    this.fontFamily.fonts.forEach(font => {
-                        var font_css = document.createElement('style');
-                        font_css.appendChild(document.createTextNode("@font-face { font-family: '" + font.name + "'; \src: url(" + font.url + ");}"));
-                        document.head.appendChild(font_css);
-                    });
+                        this.fontFamily.fonts.forEach(font => {
+                            var font_css = document.createElement('style');
+                            font_css.appendChild(document.createTextNode("@font-face { font-family: '" + font.name + "'; \src: url(" + font.url + ");}"));
+                            document.head.appendChild(font_css);
+                        });
+                        TypeRip.downloadFonts(this.fontFamily.fonts, this.fontFamily.name, this.rawDownload);
+                    }
                 }
-            })
+           )}
         },
         downloadFonts: function(font_, zipFileName_) {
             TypeRip.downloadFonts(font_, zipFileName_, this.rawDownload);
